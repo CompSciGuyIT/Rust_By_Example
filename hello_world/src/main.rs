@@ -48,4 +48,29 @@ fn main() {
 
     let pi = 3.141592;
     println!("Pi is equal to {:.*}", 3, pi);
+
+    // This structure cannot be printed either with
+    // 'fmt::Display' or 'fmt::debug'
+    struct UnPrintable(i32);
+    
+    // the 'derive' attribute automatically creates the implementation
+    // required to make this 'struct' printable with 'fmt::Debug'
+    #[derive(Debug)]
+    struct DebugPrintable(i32);
+
+    #[derive(Debug)]
+    struct Deep(DebugPrintable);
+
+    println!("{:?} months in a year", 12);
+    println!("{1:?} {0:?} is in {tvShow:?}.",
+             "Slater",
+             "Christian",
+             tvShow = "Mr. Robot");
+    
+    // The structure is now printable
+    println!("Now {:?} will print!", DebugPrintable(3));
+
+    // The problem with derive is there is no control
+    // over how the results will look.
+    println!("Now {:?} will print!", Deep(DebugPrintable(7)));
 }
