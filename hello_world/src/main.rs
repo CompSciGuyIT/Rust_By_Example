@@ -36,7 +36,7 @@ fn main() {
     println!("{number:0>width$}", number = 1, width = 6);
 
     // It will check that you've used the correct number of arguments
-    println!("My name is {0}, {1} {0}.", "Bond");
+    println!("My name is {0}, {1} {0}.", "Bond", "James");
 
     // Create a structure wehich contains an i32
     #[allow(dead_code)]
@@ -46,4 +46,6 @@ fn main() {
     // This will not work!
     // println!("This struct '{}' won't print...", Structure(3));
 
+    let pi = 3.141592;
+    println!("Pi is equal to {:.*}", 3, pi);
 }
