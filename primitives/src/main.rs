@@ -1,5 +1,6 @@
-// import the 'fmt' module to make it available
+// import the 'fmt' and 'mem' modules to make them available
 use std::fmt::{self, Formatter, Display};
+use std::mem;
 
 // Tuples can be used as function arguments and as return values
 fn reverse(pair: (i32, bool)) -> (bool, i32) {
@@ -21,6 +22,12 @@ impl fmt::Display for Matrix {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "( {} {} )\n( {} {} )", self.0, self.1, self.2, self.3)
     }
+}
+
+// This function borrows a slice
+fn analyse_slice(slice: &[i32]) {
+    println!("first element of the slice: {}", slice[0]);
+    println!("the slice has {} elements", slice.len());
 }
 
 fn main() {
@@ -108,4 +115,35 @@ fn main() {
     
     println!("Matrix:\n{}", matrix);
     println!("Transpose:\n{}", transpose(matrix));
+
+    println!();
+    println!();
+    
+    // Fixed size array (type signature is superfluous)
+    let xs: [i32; 5] = [1, 2, 3, 4, 5];
+
+    // All elements can be initialised to the same value
+    let ys: [i32; 500] = [0; 500];
+
+    // Indexing starts at zero
+    println!("the first element of the array: {}", xs[0]);
+    println!("the second element of the array: {}", xs[1]);
+
+    // 'len' returns the size of the array
+    println!("the size of the array is {}", xs.len());
+
+    // Arrays are stack allocated
+    println!("array occupies {} bytes", mem::size_of_val(&xs));
+
+    // Arrays can be automatically borrowed as slices
+    println!("borrow the whole array as a slice");
+    analyse_slice(&xs);
+
+    // Slices can point to a section of an array
+    println!("borrow a section of an array as a slice");
+    analyse_slice(&ys[1..4]);
+
+    // Out of bound indexing yeilds a panic
+    // println!("{}", xs[5]);
+
 }
