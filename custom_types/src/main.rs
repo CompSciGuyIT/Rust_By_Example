@@ -1,5 +1,121 @@
+// An attribute to hide warnings for unused code
+#![allow(dead_code)]
+
+use List::*;
+
+// Create an enum to classify someone.
+// Note how both names and type information
+// together specify the variant:
+// 'Engineer != Scientist' and 'Height(i32) != Weight(i32)'.
+// each is different and independent.
+enum Person {
+    // An enum may either be 'unit-like',
+    Engineer,
+    Scientist,
+    // like tuple structs
+    Height(i32),
+    Weight(i32),
+    // or like structures
+    Info { name: String, height: i32 }
+}
+
+// A function which takes a Person enum
+// as an argument and returns nothing
+fn inspect(p: Person) {
+    // Usage of an 'enum' must covre all cases (irrefutable)
+    // so a 'match' is used to branch over it.
+    match p {
+        Person::Engineer    => println!("Is an Engineer!"),
+        Person::Scientist   => println!("Is a Scientist!"),
+        // Destructure 'i' from inside the 'enum'
+        Person::Height(i)   => println!("Has a height of {}.", i),
+        Person::Weight(i)   => println!("Has a weight of {}.", i),
+        // Destructure 'Info' into 'name' and 'height'
+        Person::Info { name, height }   => {
+            println!("{} is {} tall.", name, height);
+        },
+    }
+}
+
+enum Status {
+    Rich,
+    Poor,
+}
+
+enum Work {
+    Civilian,
+    Soldier,
+}
+
+// enum with implicit discriminator (starts at 0)
+enum Number {
+    Zero,
+    One,
+    Two,
+}
+
+// enum with explicit discriminator
+enum Color {
+    Red = 0xff0000,
+    Green = 0x00ff00,
+    Blue = 0x0000ff,
+}
+
+enum List {
+    // Cons: Tuple struct that wraps an element and a pointer to the next node
+    Cons(u32, Box<List>),
+    // Nil: A node that signifies the end of the linked list
+    Nil,
+}
+
+// Methods can be attached to an enum
+impl List {
+    // Create an empty list
+    fn new() -> List {
+        // 'Nil' has type 'List'
+        Nil
+    }
+
+    // Consume a list, and return the same list with a new element at its front
+    fn prepend(self, elem: u32) -> List {
+        // 'Cons' also has type 'List'
+        Cons(elem, Box::new(self))
+    }
+
+    // Return the lenght of the list
+    fn len(&self) -> u32 {
+        // 'self' has to be matched, because the behaviour
+        // of this method depends on the variant of 'self'
+        // 'self' has type '&List', and '*self' has type 'List',
+        // matching on a concrete type 'T' is preferred
+        // over a match on a reference '&T'
+        match *self {
+            // Can't take ownership of the tail, because 'self' is borrowed;
+            // instead take a reference to the tail
+            Cons(_, ref tail) => 1 + tail.len(),
+            // Base Case: An empty list has zero length
+            Nil => 0
+        }
+    }
+
+    // Return representation of the list as a (heap allocated) string
+    fn stringify(&self) -> String {
+        match *self {
+            Cons(head, ref tail) => {
+                // 'format!' is similar to 'print!', but returns a heap
+                // allocated string instead of printing to the console
+                format!("{}, {}", head, tail.stringify())
+            },
+            Nil => {
+                format!("Nil")
+            },
+        }
+    }
+}
+
+
 // A unit struct
-struct Nil;
+struct _Nil;
 
 // A tuple struct
 struct Pair(i32, f32);
@@ -34,6 +150,12 @@ fn square(point: Point, length: f32) -> Rectangle {
 }
 
 fn main() {
+    /////////////////////////////////
+    //  structures
+    /////////////////////////////////
+ 
+    println!("Structures\n");
+
     // Instantiate a point
     let point: Point = Point { x: 0.3, y: 0.4 };
 
@@ -51,7 +173,7 @@ fn main() {
     };
 
     // Instantiate a unit struct
-    let _nil = Nil;
+    let _nil = _Nil;
 
     // Instantiate a tuple struct
     let pair = Pair(1, 0.1);
@@ -80,4 +202,66 @@ fn main() {
 
     println!("bottom left x: {}, bottom left y: {}", point1.x, point1.y);
     println!("top right x: {}, top right y: {}", point2.x, point2.y);
+
+    ////////////////////////////////////////////
+    // ENUMS
+    ///////////////////////////////////////////
+
+    println!("\nEnums\n");
+    let person  = Person::Height(18);
+    let amira   = Person::Weight(10);
+    // 'to_owned()' creates an owned 'String' from a string slice.
+    let dave    = Person::Info { name: "Dave".to_owned(), height: 72 };
+    let rebecca = Person::Scientist;
+    let rohan   = Person::Engineer;
+
+    inspect(person);
+    inspect(amira);
+    inspect(dave);
+    inspect(rebecca);
+    inspect(rohan);
+
+    // Explicitly 'use' eash name so they are
+    // available without manual scoping
+    use Status::{ Poor, Rich };
+    // Automatically 'use' each name inside 'Work'
+    use Work::*;
+
+    // Equivalent to 'Status::Poor'
+    let status = Poor;
+    // Equivalent to 'Work::Civilian'
+    let work = Civilian;
+
+    match status {
+        // Note the lack of scoping because of the explicit 'use' above.
+        Rich => println!("The rich have lots of money!"),
+        Poor => println!("The poor don't have money..."),    
+    }
+
+    match work {
+        // Note again the lack of scoping
+        Civilian => println!("Civilians work"),
+        Soldier  => println!("Soldiers fight"),
+    }
+
+    // enums can be cast as integers
+    println!("\nzero is {}", Number::Zero as i32);
+    println!("one is {}", Number::One as i32);
+
+    println!("roses are #{:06x}", Color::Red as i32);
+    println!("violets are #{:06}", Color::Blue as i32);
+
+    println!();
+
+    // Create an empty linked list
+    let mut list = List::new();
+
+    // Append some elements
+    list = list.prepend(1);
+    list = list.prepend(2);
+    list = list.prepend(3);
+
+    // Show the final state of the list
+    println!("linked list gas length: {}", list.len());
+    println!("{}", list.stringify());
 }
